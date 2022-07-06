@@ -2,12 +2,12 @@
 
 namespace MyBlog.Models
 {
-    public class ApplicationContex : DbContext
+    public class ApplicationContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
 
-        public ApplicationContex(DbContextOptions<ApplicationContex> options) : base(options)
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
             Database.EnsureCreated();
         }
@@ -27,6 +27,8 @@ namespace MyBlog.Models
 
             modelBuilder.Entity<Role>().HasData(new Role[] {adminRole,userRole});
             modelBuilder.Entity<User>().HasData(new User[] {adminUser});
+
+            base.OnModelCreating(modelBuilder);
         }
 
     }
