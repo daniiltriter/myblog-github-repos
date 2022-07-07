@@ -23,7 +23,7 @@ namespace MyBlog.Models
             Role adminRole = new Role { Id = 1, Name = adminRoleName};
             Role userRole = new Role { Id = 2, Name = userRoleName};
 
-            User adminUser = new User { Id = 1, Email = adminEmail, Password = adminPassword, RoleId = adminRole.Id };
+            User adminUser = new User { Id = 1, Email = adminEmail, Password = adminPassword, RoleInfoKey = adminRole.Id };
 
             modelBuilder.Entity<Role>().HasData(new Role[] {adminRole,userRole});
             modelBuilder.Entity<User>().HasData(new User[] {adminUser});
