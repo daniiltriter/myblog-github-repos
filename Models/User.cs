@@ -10,5 +10,6 @@ namespace MyBlog.Models
         public int? RoleInfoKey { get; set; }
         [ForeignKey("RoleInfoKey")]
         public Role? Role { get; set; }
+        public 
     }
 }

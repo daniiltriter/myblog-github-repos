@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MyBlog.Areas.Chat.Models;
 
 namespace MyBlog.Models
 {
@@ -6,6 +7,7 @@ namespace MyBlog.Models
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Chat> Chats { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
