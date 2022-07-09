@@ -28,18 +28,24 @@ namespace MyBlog
 
             var app = builder.Build();
 
-
-            //добавляем паттерн маршрута по-умолчанию
-
             app.UseAuthentication();
             app.UseAuthorization();
 
+            // маршрут для области аккаунта
             app.MapAreaControllerRoute(
                 name:"account_area",
                 areaName:"Account",
                 pattern: "Profile/{controller=Account}/{action=Login}/{id?}"
                 );
 
+            // маршрут для области чата
+            app.MapAreaControllerRoute(
+                name:"chat_area",
+                areaName:"Chat",
+                pattern:"Chat/{controller=Messanger}/{action=Messanger}/{id?}"
+                );
+
+            // дефолтный маршрут
             app.MapControllerRoute(
                 name: "default",
                 pattern:"{controller=Home}/{action=Index}/{id?}"

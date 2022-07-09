@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using MyBlog.Areas.Chat.Models;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyBlog.Models
 {
@@ -10,6 +12,7 @@ namespace MyBlog.Models
         public int? RoleInfoKey { get; set; }
         [ForeignKey("RoleInfoKey")]
         public Role? Role { get; set; }
-        public 
+        public List<Chat>? Chats { get; set; } = new List<Chat>();
+
     }
 }
