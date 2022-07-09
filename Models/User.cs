@@ -12,7 +12,7 @@ namespace MyBlog.Models
         public int? RoleInfoKey { get; set; }
         [ForeignKey("RoleInfoKey")]
         public Role? Role { get; set; }
-        public List<Chat>? Chats { get; set; } = new List<Chat>();
+        public List<Chat> Chats { get; set; } = new List<Chat>();
 
     }
 }

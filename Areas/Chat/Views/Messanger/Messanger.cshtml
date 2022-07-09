@@ -12,5 +12,13 @@
 		<input name="username" /><br />
 		<input type="submit" value="go" />
 	</form>
+	<hr />
+	<h2>Chats</h2>
+	<ul>
+		@foreach(var c in ViewBag.ChatsTitles)
+		{
+			<li><a>Чат с @c</a></li>
+		}
+	</ul>
 </body>
 </html>

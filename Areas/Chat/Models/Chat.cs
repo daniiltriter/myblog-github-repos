@@ -5,6 +5,8 @@ namespace MyBlog.Areas.Chat.Models
     public class Chat
     {
         public int Id { get; set; }
-        public User[] Users { get; set; } = new User[2];
+        public List<User> Members { get; set; } = new List<User>();
+        public List<Message> Messanges { get; set; } = new List<Message>();
+
     }
 }
