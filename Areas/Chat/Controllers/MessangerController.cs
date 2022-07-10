@@ -18,18 +18,9 @@ namespace MyBlog.Areas.Chat.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> Messanger()
+        public IActionResult Messanger()
         {
-            User? user = await _context.Users.Include(u => u.Chats)
-                .ThenInclude(m => m.Members).FirstOrDefaultAsync(u => u.Email == User.Identity.Name);
-
-            var chatsTitles  = (from chat in user.Chats
-                                from member in chat.Members
-                                where member.Email != User.Identity.Name
-                                select member.Email).ToList() ?? null;
-
-            ViewBag.ChatsTitles = chatsTitles;
-
+            ViewBag.ChatsTitles = ChatsTitles().ToList();
             return View();
         }
         [Authorize]
@@ -38,13 +29,10 @@ namespace MyBlog.Areas.Chat.Controllers
         {
             await ChatCreating(username);
 
-            User? user = await _context.Users.Include(u => u.Chats)
-                .ThenInclude(c => c.Members).FirstOrDefaultAsync(u => u.Email == User.Identity.Name);
-            if (user is not null)
-                ViewBag.ChatsTitles = ChatsTitles().ToList();
+            ViewBag.ChatsTitles = ChatsTitles().ToList();
             return View();
         }
-
+        #region Non Actions (SQL Methods)
         [NonAction]
         public async Task ChatCreating(string username)
         {
@@ -69,13 +57,14 @@ namespace MyBlog.Areas.Chat.Controllers
              where member.Email != User.Identity.Name
              select member.Email;
         }
-
+        [NonAction]
         public IEnumerable<string> ChatsTitles(User user)
         {
             return user.Chats.SelectMany(c => c.Members, (c, l) => new { Member = l })
                 .Select(n => n.Member.Email)
                 .Where(n => n != User.Identity.Name);
         }
+        [NonAction]
         public IQueryable<string> ChatsTitles()
         {
             return _context.Users.Include(c => c.Chats)
@@ -86,5 +75,6 @@ namespace MyBlog.Areas.Chat.Controllers
                 .Select(m=>m.Email)
                 .Where(e => e != User.Identity.Name);
         }
+        #endregion
     }
 }
