@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 
 using MyBlog.Models;
+using System.Linq;
 
 namespace MyBlog.Areas.Chat.Controllers
 {  
@@ -19,17 +20,13 @@ namespace MyBlog.Areas.Chat.Controllers
         [HttpGet]
         public async Task<IActionResult> Messanger()
         {
-            User? user = _context.Users.Include(u => u.Chats)
-                .ThenInclude(m => m.Members)
-                .FirstOrDefault(u => u.Email == User.Identity.Name);
+            User? user = await _context.Users.Include(u => u.Chats)
+                .ThenInclude(m => m.Members).FirstOrDefaultAsync(u => u.Email == User.Identity.Name);
 
-            string d1 = user.Email;
-
-           // var chatsTitles;
             var chatsTitles  = (from chat in user.Chats
                                 from member in chat.Members
                                 where member.Email != User.Identity.Name
-                                select member.Email).ToList();
+                                select member.Email).ToList() ?? null;
 
             ViewBag.ChatsTitles = chatsTitles;
 
@@ -41,15 +38,10 @@ namespace MyBlog.Areas.Chat.Controllers
         {
             await ChatCreating(username);
 
-            User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == User.Identity.Name);
-
-            var chatsTitles = (from chat in user.Chats
-                               from member in chat.Members
-                               where member.Email != User.Identity.Name
-                               select member.Email).ToList();
-
-            ViewBag.ChatsTitles = chatsTitles;
-
+            User? user = await _context.Users.Include(u => u.Chats)
+                .ThenInclude(c => c.Members).FirstOrDefaultAsync(u => u.Email == User.Identity.Name);
+            if (user is not null)
+                ViewBag.ChatsTitles = ChatsTitles().ToList();
             return View();
         }
 
@@ -58,15 +50,41 @@ namespace MyBlog.Areas.Chat.Controllers
         {
             User? userSender = await _context.Users.FirstOrDefaultAsync(u => u.Email == User.Identity.Name);
             User? userReceiver = await _context.Users.FirstOrDefaultAsync(u => u.Email == username);
-            var newChat = new Models.Chat();
 
-            _context.Chats.Add(newChat);
+            if (userSender is not null && userReceiver is not null)
+            {
+                var newChat = new Models.Chat();
+                _context.Chats.Add(newChat);
+                userSender.Chats.Add(newChat);
+                userReceiver.Chats.Add(newChat);
 
-            userSender.Chats.Add(newChat);
+                _context.SaveChanges();
+            }
+        }
+        [NonAction]
+        public IEnumerable<string> ChatsTitlesTest(User user)
+        {
+           return from chat in user.Chats
+             from member in chat.Members
+             where member.Email != User.Identity.Name
+             select member.Email;
+        }
 
-            userReceiver.Chats.Add(newChat);
-
-            _context.SaveChanges();
+        public IEnumerable<string> ChatsTitles(User user)
+        {
+            return user.Chats.SelectMany(c => c.Members, (c, l) => new { Member = l })
+                .Select(n => n.Member.Email)
+                .Where(n => n != User.Identity.Name);
+        }
+        public IQueryable<string> ChatsTitles()
+        {
+            return _context.Users.Include(c => c.Chats)
+                .ThenInclude(m => m.Members)
+                .Where(u => u.Email == User.Identity.Name)
+                .SelectMany(u => u.Chats)
+                .SelectMany(e => e.Members)
+                .Select(m=>m.Email)
+                .Where(e => e != User.Identity.Name);
         }
     }
 }

@@ -41,7 +41,7 @@ namespace MyBlog.Areas.Account.Controllers
 
                     await Authenticate(user);
 
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Profile", "Account");
                 }
                 else
                     ModelState.AddModelError("", "Try again!");
