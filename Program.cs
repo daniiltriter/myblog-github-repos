@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using MyBlog.Services;
 using MyBlog.Models;
+using System.Security.Claims;
 
 namespace MyBlog
 {
@@ -23,6 +25,7 @@ namespace MyBlog
                     option.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Profile/Account/Login");
                 });
 
+            builder.Services.AddTransient<ChatsEntityService>();
 
             builder.Services.AddControllersWithViews();
 
