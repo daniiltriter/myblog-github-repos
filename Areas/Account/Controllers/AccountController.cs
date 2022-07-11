@@ -7,15 +7,18 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 
 using MyBlog.Models;
+using MyBlog.Services;
 
 namespace MyBlog.Areas.Account.Controllers
 {
     public class AccountController : Controller
     {
         private ApplicationContext _context;
-        public AccountController(ApplicationContext context)
+        private AccountEntityService _accountService;
+        public AccountController(ApplicationContext context, AccountEntityService accountService)
         {
             _context = context;
+            _accountService = accountService;
         }
         [HttpGet]
         public IActionResult Register()
@@ -25,27 +28,18 @@ namespace MyBlog.Areas.Account.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterModel model)
+        //=> ModelState.IsValid && !await _accountService.IsUserExists(model) ? RedirectToAction("Profile", "Account") : View(model);
         {
             if (ModelState.IsValid)
-            {
-                User? user = await _context.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
-                if (user == null)
+
+                if (!await _accountService.IsUserExists(model))
                 {
-                    user = new User { Email = model.Email, Password = model.Password };
-                    Role? userRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "user");
-                    if (userRole != null)
-                        user.Role = userRole;
-
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
-
-                    await Authenticate(user);
-
-                    return RedirectToAction("Index", "Home");
+                    await _accountService.Register(model);
+                    return RedirectToAction("Profile", "Account");
                 }
                 else
                     ModelState.AddModelError("", "Try again!");
-            }
+
             return View(model);
         }
 
@@ -65,26 +59,13 @@ namespace MyBlog.Areas.Account.Controllers
                     .Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
-                    await Authenticate(user);
+                    await _accountService.Authenticate(user);
 
                     return RedirectToAction("Profile", "Account");
                 }
                 ModelState.AddModelError("", "Try again");
             }
             return View(model);
-        } 
-
-        private async Task Authenticate(User user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.Name)
-            };
-            ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie",
-                ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
         }
 
         [Authorize(Roles = "user, admin")]
