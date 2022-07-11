@@ -15,20 +15,36 @@ namespace MyBlog.Services
             _dbcontext = dbcontext;
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<bool> IsUserExists(RegisterModel model)
+        public async Task<bool> IsUserExists(string email)
         {
-            User? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Email == model.Email);
+            User? user = await _dbcontext.Users.FirstOrDefaultAsync(u => u.Email == email);
+
             if (user == null)
-            {
-                //await Register(model, user);
                 return false;
-            }
+
             return true;
         }
 
-        public async Task Register(RegisterModel model)
+        public async Task<bool> IsUserExists(string email, string password)
         {
-            var user = new User { Email = model.Email, Password = model.Password };
+            User? user = await _dbcontext.Users
+                .Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+
+            if (user == null)
+                return false;
+
+            return true;
+        }
+        public async Task Login(string email, string password)
+        {
+            var user = await _dbcontext.Users
+                    .Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+            await Authenticate(user);
+        }
+
+        public async Task Register(string email, string password)
+        {
+            var user = new User { Email = email, Password = password };
             Role? userRole = await _dbcontext.Roles.FirstOrDefaultAsync(r => r.Name == "user");
 
             if (userRole != null)

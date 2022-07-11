@@ -13,18 +13,29 @@ namespace MyBlog.Areas.Account.Controllers
 {
     public class AccountController : Controller
     {
-        private ApplicationContext _context;
         private AccountEntityService _accountService;
-        public AccountController(ApplicationContext context, AccountEntityService accountService)
+        public AccountController(AccountEntityService accountService)
         {
-            _context = context;
             _accountService = accountService;
         }
+
+        #region get requests region
+
         [HttpGet]
         public IActionResult Register()
         {
             return View();
         }
+        [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        #endregion
+
+        #region post requests region
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterModel model)
@@ -32,9 +43,9 @@ namespace MyBlog.Areas.Account.Controllers
         {
             if (ModelState.IsValid)
 
-                if (!await _accountService.IsUserExists(model))
+                if (!await _accountService.IsUserExists(model.Email))
                 {
-                    await _accountService.Register(model);
+                    await _accountService.Register(model.Email, model.Password);
                     return RedirectToAction("Profile", "Account");
                 }
                 else
@@ -43,30 +54,24 @@ namespace MyBlog.Areas.Account.Controllers
             return View(model);
         }
 
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
         {
             if (ModelState.IsValid)
-            {
-                User? user = await _context.Users
-                    .Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == model.Email && u.Password == model.Password);
-                if (user != null)
+
+                if (await _accountService.IsUserExists(model.Email, model.Password))
                 {
-                    await _accountService.Authenticate(user);
+                    await _accountService.Login(model.Email, model.Password);
 
                     return RedirectToAction("Profile", "Account");
                 }
+
                 ModelState.AddModelError("", "Try again");
-            }
+
             return View(model);
         }
+        #endregion
 
         [Authorize(Roles = "user, admin")]
         public IActionResult Profile()
