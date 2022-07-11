@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using MyBlog.Services;
 using MyBlog.Models;
-using System.Security.Claims;
 
 namespace MyBlog
 {
@@ -17,6 +16,7 @@ namespace MyBlog
 
             string connection = "Data Source=(local)\\SQLEXPRESS; Database=userstore; Persist Security Info=false; User ID='sa'; Password='sa'; MultipleActiveResultSets=True; Trusted_Connection=False;";
 
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(option =>
@@ -26,6 +26,7 @@ namespace MyBlog
                 });
 
             builder.Services.AddTransient<ChatsEntityService>();
+            builder.Services.AddTransient<AccountEntityService>();
 
             builder.Services.AddControllersWithViews();
 
